@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo"
 	"github.com/shuto/ent-api/ent"
-	"github.com/shuto/ent-api/handlers"
 )
 
 func main() {
@@ -43,9 +43,12 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	r := gin.Default()
-	r.GET("/users", handlers.GetUsers)
-	r.POST("/user/create", handlers.CreateUser)
+	r := echo.New()
+	r.GET("/users", func(c echo.Context) error {
+		eq := client.User.Query()
+		entries := eq.AllX(context.Background())
+		return c.JSON(http.StatusOK, entries)
+	})
 
-	r.Run(":8080")
+	r.Start(":8080")
 }
