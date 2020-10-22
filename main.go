@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
 	"github.com/shuto/ent-api/ent"
+	"github.com/shuto/ent-api/ent/user"
 )
 
 func main() {
@@ -48,6 +50,15 @@ func main() {
 		eq := client.User.Query()
 		entries := eq.AllX(context.Background())
 		return c.JSON(http.StatusOK, entries)
+	})
+
+	r.GET("/user/:id", func(c echo.Context) error {
+		id, _ := strconv.ParseInt(c.Param("id"), 10, 0)
+		eq := client.User.
+			Query().
+			Where(user.IDEQ(int(id)))
+		u := eq.OnlyX(context.Background())
+		return c.JSON(http.StatusOK, u)
 	})
 
 	r.Start(":8080")
