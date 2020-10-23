@@ -48,8 +48,8 @@ func main() {
 	r := echo.New()
 	r.GET("/users", func(c echo.Context) error {
 		eq := client.User.Query()
-		entries := eq.AllX(context.Background())
-		return c.JSON(http.StatusOK, entries)
+		u := eq.AllX(context.Background())
+		return c.JSON(http.StatusOK, u)
 	})
 
 	r.GET("/user/:id", func(c echo.Context) error {
@@ -59,6 +59,17 @@ func main() {
 			Where(user.IDEQ(int(id)))
 		u := eq.OnlyX(context.Background())
 		return c.JSON(http.StatusOK, u)
+	})
+
+	r.POST("/user/add", func(c echo.Context) error {
+		e := client.User.
+			Create().
+			SetName("hoge").
+			SetAge(5)
+		if _, err := e.Save(context.Background()); err != nil {
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		return c.JSON(http.StatusOK, "OK")
 	})
 
 	r.Start(":8080")
